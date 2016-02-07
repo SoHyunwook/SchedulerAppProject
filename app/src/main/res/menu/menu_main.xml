@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.schedulerproject.MainActivity">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="1"
+        android:title="@string/action_settings"
+        app:showAsAction="never" >
+        <item
+            android:id="@+id/all_List"
+            android:title = "전체리스트보기"
+            app:showAsAction="ifRoom"
+            android:icon = "@drawable/lists"/>
+    </item>
+</menu>
