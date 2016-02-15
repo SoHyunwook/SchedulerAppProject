@@ -26,7 +26,6 @@ public class MyHelper extends SQLiteOpenHelper {
                 ", toDo text, memo text, dday integer, alarm integer, theDay text);";
         try {
             db.execSQL(sql);
-//            확인을 위한 임의적인 초기화작업
             logManager.logPrint("create success");
         } catch(SQLException e) {
             logManager.logPrint("error : " + e);
@@ -38,6 +37,12 @@ public class MyHelper extends SQLiteOpenHelper {
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
         logManager.logPrint("onOpen");
+    }
+
+    public void delete(String _query) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL(_query);
+        db.close();
     }
 
     @Override

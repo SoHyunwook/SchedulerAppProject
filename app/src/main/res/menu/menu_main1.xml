@@ -5,7 +5,10 @@
     tools:context="com.example.schedulerproject.MainActivity">
     <item
         android:id="@+id/action_settings1"
-        android:orderInCategory="1"
-        android:title="@string/action_settings"
+        android:title="수정"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings2"
+        android:title="삭제"
         app:showAsAction="never" />
 </menu>

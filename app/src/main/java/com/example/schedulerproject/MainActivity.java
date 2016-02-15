@@ -269,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         + getMonthAsString(nextMonth) + "/" + nextYear);
             }
 
+
         }
 
         /**
@@ -313,7 +314,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             String theyear = day_color[2];
             Year = Integer.parseInt(theyear);
             Month = Integer.parseInt(themonth);
+            themonth = String.format("%02d", Month);
             Day = Integer.parseInt(theday);
+            theday = String.format("%02d", Day);
             if ((!eventsPerMonthMap.isEmpty()) && (eventsPerMonthMap != null)) {
                 if (eventsPerMonthMap.containsKey(theday)) {
                     num_events_per_day = (TextView) row
@@ -333,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         @Override
         public void onClick(View view) {
             String date_month_year = (String) view.getTag();
+            mlog.logPrint("view.getTag() : " + view.getTag().toString());
             imsi = date_month_year;
             String[] _sendday = date_month_year.split("/");
             Year = Integer.parseInt(_sendday[2]);
