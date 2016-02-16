@@ -7,4 +7,5 @@ public class Lists {
     public int _id;
     public String toDo;
     public String theDay;
+    public String dDay;
 }

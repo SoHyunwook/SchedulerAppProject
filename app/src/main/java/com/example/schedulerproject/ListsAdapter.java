@@ -46,8 +46,10 @@ public class ListsAdapter extends BaseAdapter {
         Lists lists = list.get(position);
         TextView tv = (TextView)convertView.findViewById(R.id.textView2);
         TextView tv1 = (TextView)convertView.findViewById(R.id.textView7);
+        TextView tv2 = (TextView)convertView.findViewById(R.id.textView9);
         tv.setText(lists.toDo);
         tv1.setText(lists.theDay);
+        tv2.setText(lists.dDay);
         return convertView;
     }
 }

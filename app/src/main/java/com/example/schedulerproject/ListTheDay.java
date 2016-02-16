@@ -90,6 +90,7 @@ public class ListTheDay extends Activity {
             lists = new Lists();
             lists._id = c.getInt(0);
             lists.toDo = c.getString(1);
+            lists.dDay = c.getString(3);
             lists.theDay = c.getString(5);
             tmp++;
             if(selectedDay.getText().toString().equals(c.getString(5))) {
@@ -116,6 +117,8 @@ public class ListTheDay extends Activity {
            c.moveToPosition(position + tmp2);
            intent.putExtra("toDo", c.getString(1));
            intent.putExtra("memo", c.getString(2));
+           intent.putExtra("dDay", c.getString(3));
+           intent.putExtra("settingAlarm", c.getString(4));
            intent.putExtra("theDay", c.getString(5));
            intent.putExtra("position", c.getPosition());
            c.close();
@@ -177,10 +180,12 @@ public class ListTheDay extends Activity {
     void clickEdit(final int index) {
         Intent intent = new Intent(ListTheDay.this, EditDay.class);
         c.moveToPosition(index + tmp2);
-        intent.putExtra("toDo", c.getString(1).toString());
+        intent.putExtra("toDo", c.getString(1));
         intent.putExtra("memo", c.getString(2));
+        intent.putExtra("dDay", c.getString(3));
+        intent.putExtra("settingAlarm", c.getString(4));
         intent.putExtra("theDay", c.getString(5));
-        intent.putExtra("position", index);
+        intent.putExtra("position", c.getPosition());
         startActivity(intent);
         finish();
     }

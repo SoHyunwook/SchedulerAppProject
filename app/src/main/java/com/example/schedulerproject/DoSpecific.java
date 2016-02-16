@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,12 +18,14 @@ import android.widget.Toast;
 public class DoSpecific extends AppCompatActivity {
     LogManager logManager;
     TextView tv3, tv4, tv5, tv8, tv6; //날짜, 할일, 메모, 알림, 디데이
+    CheckBox checkBox, checkBox2;
     MyHelper helper;
     SQLiteDatabase db;
     ListsAdapter adapter;
     Cursor c;
     int position;
 
+    EditDay using;
     void doDBOpen() {
         if(helper == null) {
             helper = new MyHelper(this, "myDB.db", null, 1);
@@ -82,6 +85,8 @@ public class DoSpecific extends AppCompatActivity {
         intent.putExtra("toDo", tv4.getText().toString());
         intent.putExtra("memo", tv5.getText().toString());
         intent.putExtra("theDay", tv3.getText().toString());
+        intent.putExtra("dDay", tv8.getText().toString());
+        intent.putExtra("settingAlarm", tv6.getText().toString());
         intent.putExtra("position", position);
         startActivity(intent);
         finish();
@@ -96,10 +101,25 @@ public class DoSpecific extends AppCompatActivity {
         db = helper.getReadableDatabase();
         helper.onOpen(db);
 
+        checkBox = (CheckBox)findViewById(R.id.checkBox);
+        checkBox2 = (CheckBox)findViewById(R.id.checkBox2);
+
         Intent intent = getIntent();
         String toDo = intent.getStringExtra("toDo");
         String memo = intent.getStringExtra("memo");
         String theDay = intent.getStringExtra("theDay");
+        String dDay = intent.getStringExtra("dDay");
+        String settingAlarm = using.alarm2;
+        logManager.logPrint("using.alarm2 : " + using.alarm2);
+        logManager.logPrint("settingAlarm : " + settingAlarm);
+        if(!dDay.equals(""))
+            checkBox.setChecked(true);
+        if(dDay.equals(""))
+            checkBox.setChecked(false);
+        if(!settingAlarm.equals(""))
+            checkBox2.setChecked(true);
+        if(settingAlarm.equals(""))
+            checkBox2.setChecked(false);
         position = intent.getIntExtra("position", 100);
         findViewById(R.id.button).setOnClickListener(handler);
         findViewById(R.id.button2).setOnClickListener(handler);
@@ -115,6 +135,8 @@ public class DoSpecific extends AppCompatActivity {
         tv3.setText(theDay);
         tv4.setText(toDo);
         tv5.setText(memo);
+        tv6.setText(settingAlarm);
+        tv8.setText(dDay);
         c.close();
         db.close();
         helper.close();

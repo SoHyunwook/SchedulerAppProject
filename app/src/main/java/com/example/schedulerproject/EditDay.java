@@ -4,8 +4,12 @@ package com.example.schedulerproject;
  * Created by 현욱 on 2016-02-03.
  */
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -35,7 +39,14 @@ public class EditDay extends Activity implements OnClickListener{
     private static final String PROVIDER_URI = "content://com.example.scheduler.ListsProvider";
     private Calendar calendar, dcalendar;//d-day를 위한 캘린더
     private long d, t, r;
-    String ddayText, toDo1, memo1;//d-day출력변수
+    private int dYear=1, dMonth=1, dDay=1;
+    private int resultNumber = 0;
+    static final int DATE_DIALOG_ID = 0;
+
+    static String alarm2;
+    String toDo1, memo1;
+    String alarm1;
+    TextView ddayText, alarmText;
     CheckBox dday, alarm;
     TextView num_events_per_day;
     Button cancel, ok;
@@ -47,6 +58,9 @@ public class EditDay extends Activity implements OnClickListener{
     MyHelper helper;
     SQLiteDatabase db;
     ArrayList<Lists> data = null;
+    private AlarmActivity setvalue = new AlarmActivity();
+    private AlarmActivity imsi;
+    AlarmManager m2Manager;
     int position;
     boolean flag = false;
 
@@ -59,11 +73,17 @@ public class EditDay extends Activity implements OnClickListener{
         month = calendar.get(Calendar.MONTH) + 1;
         year = calendar.get(Calendar.YEAR);
         day = calendar.get(Calendar.DAY_OF_MONTH);
-        dcalendar.set(using.Year, using.Month, using.Day);
+        dcalendar.set(using.Day, using.Month, using.Year);
         calendar.set(year, month, day);
-        t = calendar.getTimeInMillis()/86400000;//오늘날짜를 밀리타임으로 바꿈
-        d = dcalendar.getTimeInMillis()/86400000;//디데이날짜를 밀리타임으로 바꿈
-        r = (d-t);//디데이날짜에서 오늘 날짜를 뺀 값을 '일'단위로 바꿈
+        t = calendar.getTimeInMillis(); //오늘날짜
+        d = dcalendar.getTimeInMillis(); //디데이날짜
+        logManager.logPrint(d+"");
+        r = (d-t)/(24*60*60*1000);
+        resultNumber = (int)r;
+
+        logManager.logPrint("onCreate alarm1 : " + alarm1);
+
+        logManager.logPrint(resultNumber+"");
         caldday = (int)r + 1;
 
         Intent _intent = getIntent();
@@ -71,9 +91,31 @@ public class EditDay extends Activity implements OnClickListener{
         //dday체크박스 버튼
         dday = (CheckBox)findViewById(R.id.dday);
         dday.setOnClickListener(this);
+        ddayText = (TextView) findViewById(R.id.show_dday);
+        if(_intent.getStringExtra("dDay") != null) {
+            dday.setChecked(true);
+            ddayText.setText(_intent.getStringExtra("dDay"));
+        }
+        if(_intent.getStringExtra("dDay") == null) {
+            dday.setChecked(false);
+            ddayText.setText("");
+        }
+
         //알람체크박스버튼
         alarm = (CheckBox)findViewById(R.id.alarm);
         alarm.setOnClickListener(this);
+        alarmText = (TextView) findViewById(R.id.textView10);
+        if(_intent.getStringExtra("settingAlarm") != null) {
+            alarm.setChecked(true);
+            logManager.logPrint("setvalue.setting : " + setvalue.setting);
+            alarmText.setText(alarm1);
+        }
+        if(_intent.getStringExtra("settingAlarm") == null) {
+            alarm.setChecked(false);
+            alarmText.setText("");
+        }
+        m2Manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE); // 알람 매니저를 취득
+
         //취소버튼
         cancel = (Button)findViewById(R.id.cancel);
         cancel.setOnClickListener(this);
@@ -130,23 +172,22 @@ public class EditDay extends Activity implements OnClickListener{
                 break;
             case R.id.alarm :
                 if(alarm.isChecked()) {
-                    //Intent intent = new Intent(third_page_java.this, AlarmActivity.class);
-                    //startActivity(intent);
+                    Intent intent = new Intent(EditDay.this, AlarmActivity.class);
+                    startActivity(intent);
                 }
                 break;
             case R.id.dday :
                 if(dday.isChecked()) {
-                    if(caldday >= 0) {
-                        ddayText = String.format("D-%d", caldday);
-                        Toast toast = Toast.makeText(this, ddayText, Toast.LENGTH_LONG);
-                        toast.show();
+                    if(resultNumber >= 0) {
+                        ddayText.setText(String.format("D-%d", resultNumber));
                     }
                     else {
-                        int absR = Math.abs(caldday);
-                        ddayText = String.format("D+%d", absR);
-                        Toast toast = Toast.makeText(this, ddayText, Toast.LENGTH_LONG);
-                        toast.show();
+                        int absR = Math.abs(resultNumber);
+                        ddayText.setText(String.format("D+%d", absR));
                     }
+                }
+                else{
+                    ddayText.setText("");
                 }
                 break;
             case R.id.cancel :
@@ -154,12 +195,50 @@ public class EditDay extends Activity implements OnClickListener{
                 startActivity(intent);
                 break;
             case R.id.ok :
-                if(flag == false)
+                if(flag == false) {
+                    m2Manager.set(AlarmManager.RTC_WAKEUP, setvalue.result, pendingIntent());
+                    alarm2 = imsi.setting;
+                    alarmText.setText(alarm2);
                     inserting();
-                if(flag == true)
+                }
+                if(flag == true) {
+                    m2Manager.set(AlarmManager.RTC_WAKEUP, setvalue.result, pendingIntent());
+                    alarm2 = imsi.setting;
+                    alarmText.setText(alarm2);
                     updating(position);
+                }
                 break;
         }
+    }
+
+    private DatePickerDialog.OnDateSetListener dDateSetListener = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            dYear = year;
+            dMonth = monthOfYear;
+            dDay = dayOfMonth;
+            final Calendar dCalendar = Calendar.getInstance();
+            dCalendar.set(dYear, dMonth, dDay);
+
+            d = dCalendar.getTimeInMillis();
+            r = (d-t)/(24*60*60*1000);
+
+            resultNumber = (int)r;
+        }
+    };
+
+    protected Dialog onCreateDialog(int id){
+        if(id == DATE_DIALOG_ID){
+            return new DatePickerDialog(this, dDateSetListener, year, month, day);
+        }
+        return null;
+    }
+
+    //알람의 설정 시각에 발생하는 인텐트 작성
+    public PendingIntent pendingIntent() {
+        Intent i = new Intent(EditDay.this, AlarmEnd.class);
+        PendingIntent pi = PendingIntent.getActivity(EditDay.this, 0, i, 0);
+        return pi;
     }
 
     void inserting() {
@@ -167,19 +246,10 @@ public class EditDay extends Activity implements OnClickListener{
         ContentValues values = new ContentValues();
         values.put("toDo", title.getText().toString());
         values.put("memo", memo.getText().toString());
+        values.put("dDay", ddayText.getText().toString());
+        values.put("settingAlarm", alarm1);
+        logManager.logPrint("alarm1 : " + alarm1);
         values.put("theDay", num_events_per_day.getText().toString());
-        if(dday.isChecked()) {
-            values.put("dday", 1);
-        }
-        if(!dday.isChecked()) {
-            values.put("dday", 0);
-        }
-        if(alarm.isChecked()) {
-            values.put("alarm", 1);
-        }
-        if(!alarm.isChecked()) {
-            values.put("alarm", 0);
-        }
         try {
             long id = db.insert("lists", null, values);
             logManager.logPrint(id > 0 ? "insert success" : "insert fail");
@@ -195,20 +265,22 @@ public class EditDay extends Activity implements OnClickListener{
     void updating(int position) {
         doDBOpen();
         ContentValues values = new ContentValues();
+        Intent _intent = getIntent();
         values.put("toDo", title.getText().toString());
         values.put("memo", memo.getText().toString());
-        values.put("theDay", num_events_per_day.getText().toString());
+        values.put("dDay", ddayText.getText().toString());
+        values.put("settingAlarm", alarm1);
         if(dday.isChecked()) {
-            values.put("dday", 1);
+            values.put("dDay", ddayText.getText().toString());
         }
         if(!dday.isChecked()) {
-            values.put("dday", 0);
+            values.put("dDay", "");
         }
         if(alarm.isChecked()) {
-            values.put("alarm", 1);
+            values.put("settingAlarm", _intent.getStringExtra("settingAlarm"));
         }
         if(!alarm.isChecked()) {
-            values.put("alarm", 0);
+            values.put("alarm", "");
         }
         try {
             long id = db.update("lists", values, "toDo = '" + toDo1 + "' and memo = '" + memo1 + "';" , null);

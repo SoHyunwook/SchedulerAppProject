@@ -23,7 +23,7 @@ public class MyHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql = "create table lists ( _id integer primary key autoincrement" +
-                ", toDo text, memo text, dday integer, alarm integer, theDay text);";
+                ", toDo text, memo text, dDay text, settingAlarm text, theDay text);";
         try {
             db.execSQL(sql);
             logManager.logPrint("create success");
